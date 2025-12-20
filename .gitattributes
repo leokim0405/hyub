@@ -1,0 +1,9 @@
+# 모든 텍스트 파일은 자동으로 줄바꿈을 관리함
+* text=auto
+
+# 확장자별로 줄바꿈 강제 지정 (유니티 권장)
+*.cs text eol=lf
+*.unity text eol=lf
+*.prefab text eol=lf
+*.asset text eol=lf
+*.meta text eol=lf
