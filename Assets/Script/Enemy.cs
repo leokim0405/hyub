@@ -1,5 +1,5 @@
 using System.Collections;
-using UnityEditorInternal;
+// using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,11 +15,15 @@ public class Enemy : MonoBehaviour, ITeleportable
   private Coroutine _PatrolRoutine;
   private Coroutine _currentBehaviorRoutine;
   private EnemyVision _vision;
+  private float _chaseLossTimer = 0f; // 플레이어를 놓친 시간을 기록
+  public float chaseLossThreshold = 1.0f; // 놓친 후 대기할 시간 (1초)
+
+  Animator anim;
 
   [Header("추격 설정")]
   public float chaseSpeed = 4f;
-  public float jumpForce = 6f;
-  public float wallCheckDist = 0.7f;
+  public float jumpForce = 20f;
+  public float wallCheckDist = 1.2f;
   public float jumpThresholdY = 1.5f;
   public LayerMask groundLayer;
 
@@ -29,7 +33,11 @@ public class Enemy : MonoBehaviour, ITeleportable
 
   [Header("청각 설정")]
   public float hearingDistance = 7f; // 소리가 들리는 최대 거리
-  public float alertDuration = 3f;   // 경계 상태 유지 시간
+  public float alertDuration = 3f;   // 경계 상태 유지 
+
+  [Header("바닥 체크 설정")]
+  public Transform groundCheck;
+  public float groundCheckRadius = 0.2f;
 
   void Awake()
   {
@@ -37,13 +45,15 @@ public class Enemy : MonoBehaviour, ITeleportable
     rb = GetComponent<Rigidbody2D>();
     _vision = GetComponent<EnemyVision>();
     _playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
+    anim = GetComponent<Animator>();
+    // groundCheck = GetComponent<Transform>();
   }
 
   // void Onable()
   // {
   //   _PatrolRoutine = StartCoroutine(PatrolRoutine()); 
   // }
-  void ODisable()
+  void OnDisable()
   {
     if (_PatrolRoutine != null) StopCoroutine(PatrolRoutine());
   }
@@ -51,12 +61,13 @@ public class Enemy : MonoBehaviour, ITeleportable
   void Start()
   {
     TransitionToState(EnemyState.Patrol);
+
     // _PatrolRoutine = StartCoroutine(PatrolRoutine());
   }
 
   void Update()
   {
-    // _isGrounded = Physics2D.Raycast(transform.position, Vector2.down, 1.1f, groundLayer);
+    _isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
     Debug.DrawRay(transform.position, Vector2.down * 1.1f, Color.red);
 
     if (currentState != EnemyState.Chase)
@@ -67,31 +78,68 @@ public class Enemy : MonoBehaviour, ITeleportable
         TransitionToState(EnemyState.Chase);
       }
     }
-
-    if (currentState == EnemyState.Chase)
+    else
     {
       HandleChaseAction();
+      CheckChaseTimeout();
     }
 
+    UpdateAnimation();
+
+  }
+
+  private void UpdateAnimation()
+  {
+    if (anim == null) return;
+
+    // 2. 좌우 이동(X축) 속도가 거의 0보다 큰지 확인
+    // Mathf.Abs를 사용하는 이유는 왼쪽(-속도)으로 갈 때도 true가 되게 하기 위함입니다.
+    // 점프 중일 때 걷는 애니메이션이 나오는 걸 방지하려면 _isGrounded 체크도 추가하면 좋습니다.
+    bool isMoving = Mathf.Abs(rb.linearVelocity.x) > 0.1f && _isGrounded;
+
+    // // 1. 추격 상태(Chase)이면서 움직이고 있다면 Running = true
+    bool isRunning = (currentState == EnemyState.Chase) && isMoving;
+
+    // // 2. 추격 상태가 아니면서(Patrol 등) 움직이고 있다면 Walking = true
+    bool isWalking = (currentState != EnemyState.Chase) && isMoving;
+
+    // 애니메이터 파라미터 업데이트
+    anim.SetBool("Running", isRunning);
+    anim.SetBool("Walking", isWalking);
+    anim.SetBool("IsGround", _isGrounded);
+
+    // if (anim == null) return;
+
+    // float moveX = Mathf.Abs(rb.linearVelocity.x);
+
+    // // 바닥에 있고, 속도가 0.01보다 클 때만 걷는 것으로 판정
+    // bool walking = moveX > 0.01f && _isGrounded; 
+
+    anim.SetBool("Walking", isWalking);
+    anim.SetBool("IsGround", _isGrounded);
   }
 
   private void CheckAndJump(float direction)
   {
-    Debug.Log(_isGrounded);
     if (!_isGrounded) return;
 
-    // 시작 지점을 위로 올림 (반드시 rayOrigin을 사용해야 함!)
-    Vector2 rayOrigin = (Vector2)transform.position + Vector2.up * 0.5f;
+    // 2. 레이캐스트 시작 지점 다양화 (발밑과 허리 높이 두 곳 체크)
+    Vector2 rayOriginLow = (Vector2)transform.position + Vector2.up * 0.2f;
+    Vector2 rayOriginMid = (Vector2)transform.position + Vector2.up * 0.8f;
+    Vector2 moveDir = new Vector2(direction, 0);
 
-    // 레이캐스트 (rayOrigin 사용)
-    RaycastHit2D wallHit = Physics2D.Raycast(rayOrigin, new Vector2(direction, 0), wallCheckDist, groundLayer);
+    // 하단 레이캐스트로 장애물 감지
+    RaycastHit2D wallHit = Physics2D.Raycast(rayOriginLow, moveDir, wallCheckDist, groundLayer);
 
-    // 시각적 확인 (파란 선)
-    Debug.DrawRay(rayOrigin, new Vector2(direction, 0) * wallCheckDist, Color.blue);
+    // 디버그용 레이 (에디터 뷰에서 파란색으로 보임)
+    Debug.DrawRay(rayOriginLow, moveDir * wallCheckDist, Color.blue);
 
     if (wallHit.collider != null)
     {
+      // 장애물을 발견하면 점프! 
+      // 기존 속도를 유지하면서 Y축만 변경 (Force 방식 추천)
       rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+      Debug.Log("Jump Triggered!");
     }
   }
 
@@ -154,6 +202,7 @@ public class Enemy : MonoBehaviour, ITeleportable
 
     Debug.Log($"{gameObject.name}: state change {currentState} -> {newState}");
     currentState = newState;
+    _chaseLossTimer = 0f;
 
     if (_currentBehaviorRoutine != null)
     {
@@ -190,7 +239,28 @@ public class Enemy : MonoBehaviour, ITeleportable
 
 
     CheckAndJump(direction);
+  }
 
+  private void CheckChaseTimeout()
+  {
+    if (_vision == null) return;
+
+    if (!_vision.IsPlayerVisible())
+    {
+      // 플레이어가 안 보이면 타이머 증가
+      _chaseLossTimer += Time.deltaTime;
+
+      if (_chaseLossTimer >= chaseLossThreshold)
+      {
+        Debug.Log("플레이어를 놓쳤다. 주변을 수색하자.");
+        TransitionToState(EnemyState.Alert); // 1초가 지나면 Alert 상태로 전환
+      }
+    }
+    else
+    {
+      // 플레이어가 다시 보이면 타이머 초기화
+      _chaseLossTimer = 0f;
+    }
   }
 
   public void OnHeardSound(Vector2 soundPosition)
@@ -253,14 +323,20 @@ public class Enemy : MonoBehaviour, ITeleportable
 
   void OnCollisionEnter2D(Collision2D collision)
   {
-    if(collision.collider.CompareTag("floor"))
+    if (collision.collider.CompareTag("floor"))
     {
       _isGrounded = true;
+      anim.SetBool("IsGround", true);
     }
 
     if (_isGrounded && collision.collider.CompareTag("Obstacle"))
     {
       rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+    }
+
+    if (collision.collider.CompareTag("Player"))
+    {
+      anim.SetTrigger("IsAttack");
     }
   }
 

@@ -11,12 +11,15 @@ public class  Dagger : MonoBehaviour, ITeleportable
   public float speed;
   public ITeleportable stuckTarget;
 
+  Animator anim;
+
   // Start is called once before the first execution of Update after the MonoBehaviour is created
   void Awake()
   {
     speed = 8f;
     lifeTime = 2f;
     rb = GetComponent<Rigidbody2D>();
+    anim = GetComponent<Animator>();
     // Destroy(gameObject, lifeTime);
   }
   
@@ -90,6 +93,7 @@ public class  Dagger : MonoBehaviour, ITeleportable
 
   private void StopMovement()
   {
+    anim.SetBool("isLock", true);
     isStuck = true;
     rb.linearVelocity = Vector2.zero;
     rb.bodyType = RigidbodyType2D.Kinematic;
