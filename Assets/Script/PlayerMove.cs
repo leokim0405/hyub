@@ -1,4 +1,6 @@
 using System.Data;
+// using System.Drawing;
+using System.Security.Cryptography;
 using UnityEngine;
 
 public class PlayerMove : MonoBehaviour, ITeleportable
@@ -12,6 +14,7 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     private SpriteRenderer spriteRenderer;
     // private Transform transform;
     private float noiseRange;
+    private Color originalColor;
     // private float fireRate = 3f;
     // private float nextFireTime = 0f;
 
@@ -21,10 +24,17 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     public float jumpFoce;
     public int jumpCount;
     public bool IsGround;
+    public bool isStealth;
+
+    [Header("은신 설정")]
+    public float stealthAlpha = 0.5f; // 은신 시 투명도 (0: 투명, 1: 불투명)
+    public float stealthSpeed = 1.0f; // 은신 시 이동 속도
 
 
     [SerializeField] private GameObject daggerPrefab;
     [SerializeField] private MarkerManager markerManager;
+
+
 
     void Start()
     {
@@ -34,7 +44,9 @@ public class PlayerMove : MonoBehaviour, ITeleportable
         jumpCount = 2;
         walkspeed = 3f;
         runSpeed = 6f;
-        // noiseRange = 10f;
+        noiseRange = 10f;
+
+        originalColor = spriteRenderer.color;
     }
 
     // Update is called once per frame
@@ -87,10 +99,10 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             anim.SetBool("Jumping", true);
         }
 
-        if (_rigidBody.linearVelocity.y < 0)
-        {
-            anim.SetBool("Falling", true);
-        }
+        // if (_rigidBody.linearVelocity.y < 0)
+        // {
+        //     anim.SetBool("Falling", true);
+        // }
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -107,9 +119,32 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             }
         }
 
-        Debug.Log(_rigidBody.linearVelocity.y);
+        if (Input.GetKey(KeyCode.LeftControl))
+        {
+            speed = stealthSpeed;
+            isStealth = true;
+        }
+        else
+        {
+            speed = walkspeed;
+            isStealth = false;
+        }
 
+        SetStealth(isStealth);
     }
+
+    void SetStealth(bool isStealth)
+    {
+        if (isStealth)
+        {
+            spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, stealthAlpha);
+        }
+        else
+        {
+            spriteRenderer.color = originalColor;
+        }
+    }
+
 
     void OnCollisionEnter2D(Collision2D collision)
     {
@@ -125,6 +160,11 @@ public class PlayerMove : MonoBehaviour, ITeleportable
                 MakeNoise(transform.position, 10f); // 10만큼의 범위로 소음 전파
             }
         }
+
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            anim.SetTrigger("Die");
+        }
     }
 
     private void OnCollisionExit2D(Collision2D collision)
@@ -135,11 +175,6 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             anim.SetBool("Falling", true);
             anim.SetBool("IsGround", false);
             // _rigidBody.linearVelocity.y = 0;
-        }
-
-        if (collision.gameObject.CompareTag("Enemy"))
-        {
-            Destroy(gameObject);
         }
     }
 
