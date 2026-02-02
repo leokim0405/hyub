@@ -189,6 +189,12 @@ MonoBehaviour:
   isStealth: 0
   stealthAlpha: 0.5
   stealthSpeed: 1
+  attackRange: 1.5
+  attackOffset: {x: 0.5, y: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  attackCooldown: 1
   daggerPrefab: {fileID: 9099375237932404251, guid: afe58400e8da2e64fa673a87ab1141c2, type: 3}
   markerManager: {fileID: 6116999437025721405}
 --- !u!95 &2574940006091643003

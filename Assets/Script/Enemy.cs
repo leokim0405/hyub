@@ -3,10 +3,10 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Enemy : MonoBehaviour, ITeleportable
+public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
 {
-  public enum EnemyState { Idel, Patrol, Alert, Chase }
-  public EnemyState currentState = EnemyState.Patrol;
+  // public enum EnemyState { Idle, Patrol, Alert, Chase }
+  // public EnemyState currentState = EnemyState.Patrol;
 
   [Header("기본 설정")]
   public float speed = 3f;
@@ -214,8 +214,8 @@ public class Enemy : MonoBehaviour, ITeleportable
 
 
   // ITeleportable 구현 (마커 시스템 연동)
-  public Transform GetTransform() => transform;
-  public void OnTeleport()
+  public override Transform GetTransform() => transform;
+  public override void OnTeleport()
   {
     // 텔레포트 시 물리적 관성 제거
     rb.linearVelocity = Vector2.zero;
@@ -225,7 +225,7 @@ public class Enemy : MonoBehaviour, ITeleportable
   {
     if (currentState == newState && newState != EnemyState.Patrol) return;
 
-    Debug.Log($"{gameObject.name}: State Change {currentState} -> {newState}");
+    // Debug.Log($"{gameObject.name}: State Change {currentState} -> {newState}");
     currentState = newState;
     _chaseLossTimer = 0f;
 

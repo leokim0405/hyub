@@ -30,11 +30,16 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     public float stealthAlpha = 0.5f; // 은신 시 투명도 (0: 투명, 1: 불투명)
     public float stealthSpeed = 1.0f; // 은신 시 이동 속도
 
+    [Header("공격 설정")]
+    public float attackRange = 1.5f;       // 공격 사거리
+    public Vector2 attackOffset = new Vector2(0.5f, 0f); // 공격 중심점 오프셋
+    public LayerMask enemyLayer;           // 적 오브젝트의 레이어
+    public float attackCooldown = 1f;
+    private float nextAttackTime = 0f;
+
 
     [SerializeField] private GameObject daggerPrefab;
     [SerializeField] private MarkerManager markerManager;
-
-
 
     void Start()
     {
@@ -111,11 +116,13 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             // nextFireTime = Time.time + fireRate;
         }
 
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKeyDown(KeyCode.S) && Time.time >= nextAttackTime)
         {
             if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
             {
                 anim.SetTrigger("Attack");
+                Attack();
+                nextAttackTime = Time.time + attackCooldown;
             }
         }
 
@@ -178,6 +185,14 @@ public class PlayerMove : MonoBehaviour, ITeleportable
         }
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            anim.SetTrigger("Die");
+        }
+    }
+
     void Shoot()
     {
         Vector3 mousePos = Input.mousePosition;
@@ -218,5 +233,37 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             }
         }
     }
+
+    void Attack()
+    {
+        Debug.Log("attack");
+
+        float direction = spriteRenderer.flipX ? -1f : 1f;
+        Vector2 spawnPos = (Vector2)transform.position + new Vector2(attackOffset.x * direction, attackOffset.y);
+
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(spawnPos, attackRange, enemyLayer);
+
+        foreach (Collider2D enemyCollider in hitEnemies)
+        {
+            EnemyBase enemyScript = enemyCollider.GetComponent<EnemyBase>();
+
+            if (enemyScript != null)
+            {
+                enemyScript.OnAssassinated();
+            }
+
+        }
+
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        float direction = (spriteRenderer != null && spriteRenderer.flipX) ? -1f : 1f;
+        Vector3 spawnPos = transform.position + new Vector3(attackOffset.x * direction, attackOffset.y, 0);
+        Gizmos.DrawWireSphere(spawnPos, attackRange);
+    }
+
+
 
 }

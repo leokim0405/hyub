@@ -1,10 +1,11 @@
 using System.Collections;
 using UnityEngine;
 
-public class ShurikenEnemy : MonoBehaviour, ITeleportable
+public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
 {
-    public enum EnemyState { Patrol, Alert, Attack }
-    public EnemyState currentState = EnemyState.Patrol;
+    // public enum EnemyState { Patrol, Alert, Chase }
+    // public enum EnemyState { Patrol, Alert, Attack }
+    // public EnemyState currentState = EnemyState.Patrol;
 
     [Header("이동 설정")]
     public float moveSpeed = 2f;
@@ -62,7 +63,7 @@ public class ShurikenEnemy : MonoBehaviour, ITeleportable
         UpdateAnimation();
 
         // 상태 감지 로직
-        if (currentState == EnemyState.Attack)
+        if (currentState == EnemyState.Chase)
         {
             HandleAttackState();
         }
@@ -72,7 +73,7 @@ public class ShurikenEnemy : MonoBehaviour, ITeleportable
             {
                 // [디버그] 시야 감지 로그
                 Debug.Log("👁️ 플레이어 발견! Attack 모드로 전환!");
-                TransitionToState(EnemyState.Attack);
+                TransitionToState(EnemyState.Chase);
             }
         }
     }
@@ -99,7 +100,7 @@ public class ShurikenEnemy : MonoBehaviour, ITeleportable
             case EnemyState.Alert:
                 _currentBehaviorRoutine = StartCoroutine(AlertRoutine());
                 break;
-            case EnemyState.Attack:
+            case EnemyState.Chase:
                 break;
         }
     }
@@ -233,10 +234,10 @@ public class ShurikenEnemy : MonoBehaviour, ITeleportable
 
     public void OnHeardSound(Vector2 soundPosition)
     {
-        if (currentState == EnemyState.Attack) return;
+        if (currentState == EnemyState.Chase) return;
         _lastHeardPos = soundPosition;
         TransitionToState(EnemyState.Alert);
     }
-    public Transform GetTransform() => transform;
-    public void OnTeleport() => rb.linearVelocity = Vector2.zero;
+    public override Transform GetTransform() => transform;
+    public override void OnTeleport() => rb.linearVelocity = Vector2.zero;
 }
