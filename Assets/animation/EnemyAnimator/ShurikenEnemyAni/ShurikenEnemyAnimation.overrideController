@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ShurikenEnemyAnimation
+  m_Controller: {fileID: 9100000, guid: de87edec69a26294fbdabb49e93e68ac, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: f02e0a540cbcef5489625094f9958a5a, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: a149378b10f63ce4fab8c2a06378a1b6, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 0a8044f8325bce245b010158e8de58fb, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: ed49cf860654f644f9708c48984b8a65, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 5efcaaa24e3df0742ac8506f34bc499d, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: a4f8f3949a0560340bdd9754918cc3ae, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 8d2b0429a4acbb44aa607cabe2d9c3e6, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 67f9a56f269ea7f42bbf810bca66ec93, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 6d336ed1a4a5c9940a1a9d212def1c1c, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 2c7003f481e811141a6b2a260381bc91, type: 2}

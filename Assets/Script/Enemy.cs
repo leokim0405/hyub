@@ -13,24 +13,24 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
   public float patrolTime = 2f;
   public float waitTime = 0.2f;
 
-  private Rigidbody2D rb;
+  // private Rigidbody2D rb;
   // private Coroutine _PatrolRoutine;  // edit
   private Coroutine _currentBehaviorRoutine;
   private EnemyVision _vision;
   private float _chaseLossTimer = 0f; // 플레이어를 놓친 시간을 기록
   public float chaseLossThreshold = 1.0f; // 놓친 후 대기할 시간 (1초)
 
-  Animator anim;
+  // Animator anim;
 
   [Header("추격 설정")]
   public float chaseSpeed = 4f;
-  public float jumpForce = 10f;
+  // public float jumpForce = 10f;
   public float wallCheckDist = 1.0f;
   // public float jumpThresholdY = 1.5f;  // edit
   public LayerMask groundLayer;
 
   private Transform _playerTransform;
-  private bool _isGrounded;
+  // private bool _isGrounded;
   private Vector2 _lastHeardPos;
 
   [Header("점프 설정")]
@@ -47,6 +47,7 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
 
   void Awake()
   {
+    base.Awake();
     // speed = 3f;
     rb = GetComponent<Rigidbody2D>();
     _vision = GetComponent<EnemyVision>();
@@ -88,7 +89,7 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
     {
       if (_vision != null && _vision.IsPlayerVisible())
       {
-        Debug.Log("Player Detected -> Chase Start");
+        // Debug.Log("Player Detected -> Chase Start");
         TransitionToState(EnemyState.Chase);
       }
     }
@@ -164,7 +165,7 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
     // 5. 점프 실행
     if (isHit)
     {
-      Debug.Log("🚧 낮은 장애물 감지! 점프!");
+      //  Debug.Log("🚧 낮은 장애물 감지! 점프!");
       rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
       _jumpCooldown = Time.time + _jumpCooldownTime;
     }
@@ -175,7 +176,7 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
     while (currentState == EnemyState.Patrol) // 무한 루프 (순찰 계속)
     {
       // 1. 오른쪽으로 이동
-      UnityEngine.Debug.Log("move start");
+      // UnityEngine.Debug.Log("move start");
       yield return StartCoroutine(MoveInDirection(Vector2.right, patrolTime));
 
       // 2. 잠시 대기
@@ -279,7 +280,7 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
       {
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         _jumpCooldown = Time.time + 0.5f; // 점프 쿨타임 갱신
-        Debug.Log("플레이어가 위에 있어 점프!");
+        // Debug.Log("플레이어가 위에 있어 점프!");
       }
     }
   }
@@ -373,29 +374,30 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
     }
   }
 
-  void OnCollisionEnter2D(Collision2D collision)
-  {
-    if (collision.collider.CompareTag("floor"))
-    {
-      _isGrounded = true;
-    }
+  // void OnCollisionEnter2D(Collision2D collision)
+  // {
+  //   if (collision.collider.CompareTag("floor"))
+  //   {
+  //     _isGrounded = true;
+  //   }
 
-    if (_isGrounded && collision.collider.CompareTag("Obstacle"))
-    {
-      rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-    }
+  //   if (_isGrounded && collision.collider.CompareTag("Obstacle"))
+  //   {
+  //     rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+  //   }
 
-    if (collision.collider.CompareTag("Player"))
-    {
-      anim.SetTrigger("IsAttack");
-    }
-  }
+  //   if (collision.collider.CompareTag("Player"))
+  //   {
+  //     anim.SetTrigger("IsAttack");
+  //   }
+  // }
 
-  private void OnCollisionExit2D(Collision2D collision)
-  {
-    if (collision.gameObject.CompareTag("floor") || collision.gameObject.CompareTag("Obstacle"))
-    {
-      _isGrounded = false;
-    }
-  }
+  // private void OnCollisionExit2D(Collision2D collision)
+  // {
+  //   if (collision.gameObject.CompareTag("floor") || collision.gameObject.CompareTag("Obstacle"))
+  //   {
+  //     _isGrounded = false;
+  //   }
+  // }
+
 }

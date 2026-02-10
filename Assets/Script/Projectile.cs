@@ -30,10 +30,11 @@ public class Projectile : MonoBehaviour
         // 1. 플레이어 충돌 처리 (태그 사용)
         if (collision.CompareTag("Player"))
         {
-            Debug.Log("💥 플레이어 피격!");
+            // Debug.Log("💥 플레이어 피격!");
             // TODO: 데미지 처리
             // collision.GetComponent<PlayerHealth>()?.TakeDamage(damage);
             Destroy(gameObject);
+            
         }
         // 2. 장애물/땅 충돌 처리 (LayerMask 사용)
         // 설명: 부딪힌 물체의 레이어가 collisionLayer에 포함되어 있는지 비트 연산으로 확인

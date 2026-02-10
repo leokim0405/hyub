@@ -16,7 +16,7 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
     public LayerMask groundLayer;
     public float wallCheckDist = 0.5f;
     public float cliffCheckDist = 0.5f;
-    private bool _isGrounded;
+    // private bool _isGrounded;
 
     [Header("공격/감지")]
     public GameObject projectilePrefab;
@@ -29,12 +29,14 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
     public float chaseLossThreshold = 2.0f;
     private Vector2 _lastHeardPos;
 
-    private Rigidbody2D rb;
-    private Animator anim;
+    // private Rigidbody2D rb;
+    // private Animator anim;
     private Coroutine _currentBehaviorRoutine;
 
     void Awake()
     {
+        base.Awake();
+        
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         _vision = GetComponent<ShurikenEnemyVision>();
@@ -44,11 +46,13 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
             if (playerObj != null) _playerTransform = playerObj.transform;
         }
+
+        // currentHealth = 1f;
     }
 
     void Start()
     {
-        Debug.Log("🚀 게임 시작! Patrol 상태로 전환 시도...");
+        // Debug.Log("🚀 게임 시작! Patrol 상태로 전환 시도...");
         TransitionToState(EnemyState.Patrol);
     }
 
@@ -72,7 +76,7 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
             if (_vision != null && _vision.IsPlayerVisible())
             {
                 // [디버그] 시야 감지 로그
-                Debug.Log("👁️ 플레이어 발견! Attack 모드로 전환!");
+                // Debug.Log("👁️ 플레이어 발견! Attack 모드로 전환!");
                 TransitionToState(EnemyState.Chase);
             }
         }
@@ -83,7 +87,7 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
         if (currentState == newState && _currentBehaviorRoutine != null) return;
 
         // [디버그] 상태 변경 로그
-        Debug.Log($"🔄 상태 변경: {currentState} -> {newState}");
+        // Debug.Log($"🔄 상태 변경: {currentState} -> {newState}");
 
         currentState = newState;
         _chaseLossTimer = 0f;
@@ -107,7 +111,7 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
 
     IEnumerator PatrolRoutine()
     {
-        Debug.Log("🚶 순찰(Patrol) 루틴 시작됨"); // 루틴 진입 확인
+        // Debug.Log("🚶 순찰(Patrol) 루틴 시작됨"); // 루틴 진입 확인
 
         while (currentState == EnemyState.Patrol)
         {

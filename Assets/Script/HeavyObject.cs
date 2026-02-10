@@ -19,5 +19,12 @@ public class HeavyObject : MonoBehaviour, ITeleportable
     public void OnTeleport()
     {
         UnityEngine.Debug.Log("tp success");
-    }   
+    }
+
+    private void OnCollisionEnter2D(Collision2D other) {
+        if(other.collider.CompareTag("Enemy"))
+        {
+            Destroy(gameObject);
+        }
+    }
 }
