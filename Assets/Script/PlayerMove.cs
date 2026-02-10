@@ -2,6 +2,7 @@ using System.Data;
 // using System.Drawing;
 using System.Security.Cryptography;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class PlayerMove : MonoBehaviour, ITeleportable
 {
@@ -17,7 +18,7 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     private Color originalColor;
     // private float fireRate = 3f;
     // private float nextFireTime = 0f;
-
+    public int playerHP = 4;
     public float speed;
     public float walkspeed;
     public float runSpeed;
@@ -25,6 +26,9 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     public int jumpCount;
     public bool IsGround;
     public bool isStealth;
+    public bool isInHidingZone;
+    public bool isCrouching;
+
 
     [Header("은신 설정")]
     public float stealthAlpha = 0.5f; // 은신 시 투명도 (0: 투명, 1: 불투명)
@@ -36,6 +40,9 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     public LayerMask enemyLayer;           // 적 오브젝트의 레이어
     public float attackCooldown = 1f;
     private float nextAttackTime = 0f;
+    public float shootCooldown = 0.5f;
+    private float nextShootTime = 0f;
+
 
 
     [SerializeField] private GameObject daggerPrefab;
@@ -52,6 +59,10 @@ public class PlayerMove : MonoBehaviour, ITeleportable
         noiseRange = 10f;
 
         originalColor = spriteRenderer.color;
+        if (HpUIManager.hpUI != null)
+        {
+            HpUIManager.hpUI.HeartUI(playerHP);
+        }
     }
 
     // Update is called once per frame
@@ -109,11 +120,14 @@ public class PlayerMove : MonoBehaviour, ITeleportable
         //     anim.SetBool("Falling", true);
         // }
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && Time.time >= nextShootTime)
         {
-            Shoot();
-            anim.SetTrigger("Throw");
-            // nextFireTime = Time.time + fireRate;
+            if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Throw"))
+            {
+                anim.SetTrigger("Throw");
+                Shoot();
+                nextAttackTime = Time.time + shootCooldown;
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.S) && Time.time >= nextAttackTime)
@@ -129,15 +143,23 @@ public class PlayerMove : MonoBehaviour, ITeleportable
         if (Input.GetKey(KeyCode.LeftControl))
         {
             speed = stealthSpeed;
-            isStealth = true;
+            isCrouching = true;
         }
         else
         {
             speed = walkspeed;
-            isStealth = false;
+            isCrouching = false;
         }
 
+        isStealth = isCrouching||isInHidingZone;
+
         SetStealth(isStealth);
+    }
+
+    public void SetHidingState(bool isInZone)
+    {
+        isInHidingZone = isInZone;
+        // Update에서 자동으로 isStealth가 갱신됨
     }
 
     void SetStealth(bool isStealth)
@@ -170,7 +192,14 @@ public class PlayerMove : MonoBehaviour, ITeleportable
 
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            anim.SetTrigger("Die");
+            playerHP-=1;
+            if (HpUIManager.hpUI != null)
+            {
+                HpUIManager.hpUI.HeartUI(playerHP);
+            }
+            if(playerHP<=0){
+                anim.SetTrigger("Die");
+            }
         }
     }
 
@@ -181,7 +210,7 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             IsGround = false;
             anim.SetBool("Falling", true);
             anim.SetBool("IsGround", false);
-            // _rigidBody.linearVelocity.y = 0;
+            // _rigidBody.linearVelocity.y = 0; 
         }
     }
 
@@ -189,7 +218,14 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            anim.SetTrigger("Die");
+            playerHP-=1;
+            if (HpUIManager.hpUI != null)
+            {
+                HpUIManager.hpUI.HeartUI(playerHP);
+            }
+            if(playerHP<=0){
+                anim.SetTrigger("Die");
+            }
         }
     }
 
@@ -210,6 +246,11 @@ public class PlayerMove : MonoBehaviour, ITeleportable
         daggerScript.Launch(shootDir);
 
         markerManager.AddDagger(daggerScript);
+
+        if (SkillUIManager.instance != null)
+        {
+            SkillUIManager.instance.TriggerCooldown(0, shootCooldown);
+        }
     }
 
     public Transform GetTransform() => transform;
@@ -227,7 +268,7 @@ public class PlayerMove : MonoBehaviour, ITeleportable
         foreach (Collider2D enemyCollider in enemies)
         {
             Enemy enemy = enemyCollider.GetComponent<Enemy>();
-            if (enemy != null)
+            if (enemy != null && isStealth)
             {
                 enemy.OnHeardSound(position);
             }
