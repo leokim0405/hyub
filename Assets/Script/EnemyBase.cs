@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public abstract class EnemyBase : MonoBehaviour, ITeleportable
 {
@@ -22,6 +23,7 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
 
     [Header("UI 설정")]
     public GameObject detectionMark;
+    public GameObject curiousMark;
 
     [Header("사운드 설정")]
     public AudioSource AudioSource;
@@ -43,10 +45,19 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
             // 상태가 바뀔 때 자동으로 '!' 활성화 여부 결정
             if (detectionMark != null)
             {
+                // 현재 상태가 Chase일 때만 true, 나머지는 false
                 detectionMark.SetActive(_currentState == EnemyState.Chase);
             }
+
+            if (curiousMark != null)
+            {
+                // 현재 상태가 Alert일 때만 true, 나머지는 false
+                curiousMark.SetActive(_currentState == EnemyState.Alert);
+            }
+
         }
     }
+
 
     protected virtual void Awake()
     {
@@ -84,8 +95,51 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
     {
         Debug.Log($"{gameObject.name} 사망");
         // 사망 애니메이션이나 이펙트 처리를 위해 가상 메서드로 분리
+        // Destroy(gameObject);
+
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+
+        StartCoroutine(FadeOutAndDestroy(1.0f));    //1초동안 사라짐 숫자 바꿔주면 시간 변경가능함
+    }
+
+    private IEnumerator FadeOutAndDestroy(float duration)
+    {
+        SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
+        float elapsed = 0f;
+
+        // 1. 시작 위치와 목표 위치 설정
+        Vector3 startPosition = transform.position;
+        float floatHeight = 0.5f; // 위로 떠오를 높이 (원하는 만큼 조절)
+        Vector3 targetPosition = startPosition + new Vector3(0, floatHeight, 0);
+
+        if (sr != null)
+        {
+            Color startColor = sr.color;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration; // 0에서 1로 변하는 진행률
+
+                // 2. 투명도 조절 (1 -> 0)
+                float newAlpha = Mathf.Lerp(1f, 0f, t);
+                sr.color = new Color(startColor.r, startColor.g, startColor.b, newAlpha);
+
+                // 3. 위치 조절 (시작점 -> 목표점)
+                // 직선적으로 올라가게 하려면 Lerp를 사용합니다.
+                transform.position = Vector3.Lerp(startPosition, targetPosition, t);
+
+                yield return null;
+            }
+        }
+
         Destroy(gameObject);
     }
+
 
     public abstract Transform GetTransform();
     public abstract void OnTeleport();

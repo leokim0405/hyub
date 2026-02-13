@@ -240,6 +240,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8300000, guid: e98e5704597841d47afc4185c0e46fa0, type: 3}
     - target: {fileID: 2202911633433911242, guid: ffb3555a40c82134aa25d98cf82e0951, type: 3}
+      propertyPath: curiousMark
+      value: 
+      objectReference: {fileID: 5656859019545015854}
+    - target: {fileID: 2202911633433911242, guid: ffb3555a40c82134aa25d98cf82e0951, type: 3}
       propertyPath: detectionMark
       value: 
       objectReference: {fileID: 998785014845768315}
@@ -312,7 +316,27 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5897470155064276682, guid: ffb3555a40c82134aa25d98cf82e0951, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2991734901081661639}
+    - targetCorrespondingSourceObject: {fileID: 7021363051231047787, guid: ffb3555a40c82134aa25d98cf82e0951, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 517397583724129144}
   m_SourcePrefab: {fileID: 100100000, guid: ffb3555a40c82134aa25d98cf82e0951, type: 3}
+--- !u!1 &5656859019545015854 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7021363051231047787, guid: ffb3555a40c82134aa25d98cf82e0951, type: 3}
+  m_PrefabInstance: {fileID: 3454778990862796357}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &517397583724129144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5656859019545015854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c0911f212da25f47a9deed9d69c67a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIKeepDirection
 --- !u!4 &6724198993528894130 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8259866061760378103, guid: ffb3555a40c82134aa25d98cf82e0951, type: 3}
@@ -341,6 +365,7 @@ MonoBehaviour:
   minFallSpeed: 3
   fallDamage: 1
   detectionMark: {fileID: 0}
+  curiousMark: {fileID: 0}
   AudioSource: {fileID: 0}
   attackSound: {fileID: 0}
   boxColidekSound: {fileID: 0}

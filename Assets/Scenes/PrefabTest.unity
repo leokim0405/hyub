@@ -224,7 +224,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05aadfd14fab1ae4b92822dfddd68316, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParallaxBackground
-  cam: {fileID: 0}
   parallaxEffect: 0
 --- !u!61 &89298016
 BoxCollider2D:
@@ -695,7 +694,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05aadfd14fab1ae4b92822dfddd68316, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParallaxBackground
-  cam: {fileID: 0}
   parallaxEffect: 0.3
 --- !u!1 &894564311
 GameObject:
@@ -1168,7 +1166,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05aadfd14fab1ae4b92822dfddd68316, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParallaxBackground
-  cam: {fileID: 0}
   parallaxEffect: -1
 --- !u!4 &1477151719 stripped
 Transform:
@@ -1588,7 +1585,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05aadfd14fab1ae4b92822dfddd68316, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParallaxBackground
-  cam: {fileID: 0}
   parallaxEffect: 0.6
 --- !u!1 &2126187458
 GameObject:
