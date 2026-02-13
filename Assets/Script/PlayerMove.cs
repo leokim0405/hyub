@@ -43,8 +43,18 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     public float shootCooldown = 0.5f;
     private float nextShootTime = 0f;
 
+    [Header("사운드 설정")]
+    public AudioSource moveAudioSource;
+    public AudioSource sfxAudioSource;
+    public AudioClip walkSound;
+    public AudioClip attackSound;
+    public AudioClip teleportSound;
 
-
+    public float walkVolume = 0.3f;
+    public float attackVolume = 1.0f;
+     
+     
+     [Header("마커 설정")]
     [SerializeField] private GameObject daggerPrefab;
     [SerializeField] private MarkerManager markerManager;
 
@@ -151,9 +161,34 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             isCrouching = false;
         }
 
-        isStealth = isCrouching||isInHidingZone;
+        isStealth = isCrouching || isInHidingZone;
 
         SetStealth(isStealth);
+
+        HandleMoveSound();
+    }
+
+    void HandleMoveSound()
+    {
+        bool isMoving = Mathf.Abs(dir) > 0.1f && IsGround;
+
+        if (isMoving && !isStealth)
+        {
+            if (!moveAudioSource.isPlaying)
+            {
+                moveAudioSource.clip = walkSound;
+                moveAudioSource.loop = true;
+                moveAudioSource.volume = walkVolume;
+                moveAudioSource.Play();
+            }
+        }
+        else
+        {
+            if (moveAudioSource.clip == walkSound && moveAudioSource.isPlaying)
+            {
+                moveAudioSource.Stop();
+            }
+        }
     }
 
     public void SetHidingState(bool isInZone)
@@ -192,12 +227,13 @@ public class PlayerMove : MonoBehaviour, ITeleportable
 
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            playerHP-=1;
+            playerHP -= 1;
             if (HpUIManager.hpUI != null)
             {
                 HpUIManager.hpUI.HeartUI(playerHP);
             }
-            if(playerHP<=0){
+            if (playerHP <= 0)
+            {
                 anim.SetTrigger("Die");
             }
         }
@@ -218,12 +254,13 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            playerHP-=1;
+            playerHP -= 1;
             if (HpUIManager.hpUI != null)
             {
                 HpUIManager.hpUI.HeartUI(playerHP);
             }
-            if(playerHP<=0){
+            if (playerHP <= 0)
+            {
                 anim.SetTrigger("Die");
             }
         }
@@ -257,6 +294,10 @@ public class PlayerMove : MonoBehaviour, ITeleportable
 
     public void OnTeleport()
     {
+        if (teleportSound != null && sfxAudioSource != null)
+        {
+            sfxAudioSource.PlayOneShot(teleportSound, attackVolume);
+        }
         UnityEngine.Debug.Log("tp success");
     }
 
@@ -293,6 +334,12 @@ public class PlayerMove : MonoBehaviour, ITeleportable
                 enemyScript.OnAssassinated();
             }
 
+        }
+
+        if (attackSound != null)
+        {
+            sfxAudioSource.PlayOneShot(attackSound, attackVolume);
+            Debug.Log("attack sound!");
         }
 
     }

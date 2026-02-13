@@ -5,7 +5,7 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
     protected Rigidbody2D rb;
     protected bool _isGrounded;
     protected Animator anim;
-    
+
     public float jumpForce = 10f;
 
 
@@ -22,6 +22,13 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
 
     [Header("UI 설정")]
     public GameObject detectionMark;
+
+    [Header("사운드 설정")]
+    public AudioSource AudioSource;
+    public AudioClip attackSound;
+    public AudioClip boxColidekSound;
+    public float volume = 0.4f;
+
 
     public EnemyState currentState
     {
@@ -101,6 +108,8 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
             if (collision.relativeVelocity.y < -minFallSpeed) // 위에서 아래로 떨어지는 경우
             {
                 TakeDamage(fallDamage);
+                AudioSource.PlayOneShot(boxColidekSound, volume);
+                Destroy(collision.gameObject);
             }
         }
 
@@ -117,6 +126,11 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
         if (collision.collider.CompareTag("Player"))
         {
             anim.SetTrigger("IsAttack");
+
+            if (attackSound != null)
+            {
+                AudioSource.PlayOneShot(attackSound, volume);
+            }
         }
     }
 

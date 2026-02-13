@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Xml.Resolvers;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -10,19 +11,23 @@ public class MarkerManager : MonoBehaviour
     [SerializeField] private GameObject player;
     private ITeleportable playerTeleport;
 
-  // Start is called once before the first execution of Update after the MonoBehaviour is created
-  void Start()
-  {
+    [Header("사운드 설정")]
+    public AudioSource audioSource; // 효과음 전용 오디오 소스
+    public AudioClip swapSound;
 
-  }
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+
+    }
 
 
-  void Awake()
-  {
-    playerTeleport = player.GetComponent<ITeleportable>();
-  }
+    void Awake()
+    {
+        playerTeleport = player.GetComponent<ITeleportable>();
+    }
 
-  // Update is called once per frame
+    // Update is called once per frame
     void Update()
     {
         if (Input.GetMouseButtonDown(1))
@@ -49,25 +54,25 @@ public class MarkerManager : MonoBehaviour
 
     private void ExecuteSwap()
     {
-        activeDaggers.RemoveAll(d=> d == null);
+        activeDaggers.RemoveAll(d => d == null);
 
         int count = activeDaggers.Count;
 
-        if(count == 0) return;
+        if (count == 0) return;
 
-        if(count == 1)
+        if (count == 1)
         {
             ITeleportable target = activeDaggers[0].stuckTarget ?? activeDaggers[0].GetComponent<ITeleportable>();
             UnityEngine.Debug.Log("swap with player");
             Swap(playerTeleport, target);
         }
-        else if(count== 2)
+        else if (count == 2)
         {
             ITeleportable targetA = activeDaggers[0].stuckTarget ?? activeDaggers[0].GetComponent<ITeleportable>();
             ITeleportable targetB = activeDaggers[1].stuckTarget ?? activeDaggers[1].GetComponent<ITeleportable>();
 
             UnityEngine.Debug.Log("dagger swap dagger");
-            
+
             Swap(targetA, targetB);
         }
 
@@ -89,6 +94,11 @@ public class MarkerManager : MonoBehaviour
         // 순간이동 후 피드백 효과
         a.OnTeleport();
         b.OnTeleport();
+
+        if(swapSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(swapSound);
+        }
     }
 
     private void ClearAllDaggers()
@@ -97,17 +107,19 @@ public class MarkerManager : MonoBehaviour
         {
             if (dagger != null) Destroy(dagger.gameObject);
         }
-        
+
         activeDaggers.Clear();
     }
 
     public void RemoveDaggerFromList(Dagger dagger)
     {
-        if(activeDaggers.Contains(dagger))
+        if (activeDaggers.Contains(dagger))
         {
             activeDaggers.Remove(dagger);
         }
     }
+
+    
 
 
 }

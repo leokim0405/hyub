@@ -18,6 +18,11 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
     public float cliffCheckDist = 0.5f;
     // private bool _isGrounded;
 
+    // [Header("사운드 설정")]
+    // public AudioSource AudioSource;
+    // public AudioClip attackSound;
+    // public float volume;
+
     [Header("공격/감지")]
     public GameObject projectilePrefab;
     public Transform firePoint;
@@ -33,10 +38,11 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
     // private Animator anim;
     private Coroutine _currentBehaviorRoutine;
 
+
     void Awake()
     {
         base.Awake();
-        
+
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         _vision = GetComponent<ShurikenEnemyVision>();
@@ -138,7 +144,7 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
         float rayLength = col.bounds.extents.y + 0.5f;
 
         RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, rayLength, groundLayer);
-        
+
         // [중요] 빨간 선이 그려져야 이 함수가 실행되고 있는 것임
         Debug.DrawRay(origin, Vector2.down * rayLength, hit.collider == null ? Color.red : Color.green);
 
@@ -165,7 +171,7 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
 
     // ... (나머지 Alert, Attack, UpdateAnimation 등은 기존과 동일) ...
     // 코드가 너무 길어지니 생략된 부분은 기존 코드를 유지해주세요.
-    
+
     // [Attack, Alert, Animation 코드 유지 필요]
     private void UpdateAnimation()
     {
@@ -206,6 +212,11 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
         _lastAttackTime = Time.time;
         anim.SetTrigger("IsAttack");
         StartCoroutine(ShootDelay(0.2f));
+
+        if (attackSound != null)
+        {
+            AudioSource.PlayOneShot(attackSound, volume);
+        }
     }
 
     IEnumerator ShootDelay(float delay)
@@ -218,20 +229,20 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
             projectile.GetComponent<Projectile>().Launch(dir);
         }
     }
-    
+
     IEnumerator AlertRoutine()
     {
         float dir = _lastHeardPos.x - transform.position.x;
-        if (dir != 0) 
-        { 
-            _facingDir = dir > 0 ? 1 : -1; 
-            
+        if (dir != 0)
+        {
+            _facingDir = dir > 0 ? 1 : -1;
+
             // [수정] 기존 스케일 유지
             Vector3 scale = transform.localScale;
             scale.x = Mathf.Abs(scale.x) * _facingDir;
             transform.localScale = scale;
         }
-        rb.linearVelocity = Vector2.zero; 
+        rb.linearVelocity = Vector2.zero;
         yield return new WaitForSeconds(3f);
         if (currentState == EnemyState.Alert) TransitionToState(EnemyState.Patrol);
     }
