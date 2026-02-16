@@ -21,8 +21,9 @@ public class ParallaxBackground : MonoBehaviour
         Vector3 deltaMovement = cameraTransform.position - lastCameraPosition;
 
         // 배경 이동 (카메라 이동량 * 효과 비율)
-        transform.position += new Vector3(deltaMovement.x * parallaxEffect, deltaMovement.y * parallaxEffect, 0);
+        transform.position += new Vector3(deltaMovement.x * parallaxEffect, 0, 0);
 
         lastCameraPosition = cameraTransform.position;
     }
 }
+
