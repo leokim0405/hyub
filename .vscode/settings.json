@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "hyub.slnx"
+    "dotnet.defaultSolution": "GameJAM.slnx"
 }

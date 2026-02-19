@@ -106,17 +106,6 @@ public class PlayerMove : MonoBehaviour, ITeleportable
         gameObject.transform.Translate(moveVector * Time.deltaTime, 0);
 
 
-        if (Input.GetKey(KeyCode.LeftShift))
-        {
-            anim.SetBool("Running", true);
-            speed = runSpeed;
-        }
-        else
-        {
-            anim.SetBool("Running", false);
-            speed = walkspeed;
-        }
-
         if (Input.GetKeyDown(KeyCode.Space) && jumpCount != 0)
         {
             // _rigidBody.AddForce(new Vector2(0, 6), ForceMode2D.Impulse);
@@ -155,8 +144,14 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             speed = stealthSpeed;
             isCrouching = true;
         }
+        else if (Input.GetKey(KeyCode.LeftShift))
+        {
+            anim.SetBool("Running", true);
+            speed = runSpeed;
+        }
         else
         {
+            anim.SetBool("Running", false);
             speed = walkspeed;
             isCrouching = false;
         }
