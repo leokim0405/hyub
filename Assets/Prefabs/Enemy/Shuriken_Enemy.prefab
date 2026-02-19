@@ -531,6 +531,8 @@ MonoBehaviour:
     m_Bits: 768
   wallCheckDist: 1
   cliffCheckDist: 0.5
+  groundCheck: {fileID: 7468233276757583507}
+  groundCheckRadius: 0.1
   projectilePrefab: {fileID: 1495151769844238132, guid: e20e746e3e1af534da5631c2c5439bd5, type: 3}
   firePoint: {fileID: 8197196737826196397}
   attackCooldown: 2

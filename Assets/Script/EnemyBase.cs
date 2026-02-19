@@ -31,6 +31,7 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
     public AudioClip boxColidekSound;
     public float volume = 0.4f;
 
+    private bool isTakingDamage = false;
 
     public EnemyState currentState
     {
@@ -157,12 +158,22 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
         // 1. 떨어지는 물체인지 태그로 확인
         if (collision.gameObject.CompareTag("Obstacle"))
         {
+            if (isTakingDamage)
+            {
+                return;
+            }
+
             Debug.Log($"obstacle collision speed : {collision.relativeVelocity.y}");
             // 2. 충돌 시점의 속도가 충분히 빠른지 확인
             if (collision.relativeVelocity.y < -minFallSpeed) // 위에서 아래로 떨어지는 경우
             {
+                collision.gameObject.SetActive(false);
+
+                StartCoroutine(DamageCooldownRoutine());
+
                 TakeDamage(fallDamage);
                 AudioSource.PlayOneShot(boxColidekSound, volume);
+                
                 Destroy(collision.gameObject);
             }
         }
@@ -186,6 +197,13 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
                 AudioSource.PlayOneShot(attackSound, volume);
             }
         }
+    }
+
+    private IEnumerator DamageCooldownRoutine()
+    {
+        isTakingDamage = true;
+        yield return new WaitForSeconds(0.3f);
+        isTakingDamage = false;
     }
 
     protected virtual void OnCollisionExit2D(Collision2D collision)

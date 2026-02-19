@@ -18,6 +18,9 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
     public float cliffCheckDist = 0.5f;
     // private bool _isGrounded;
 
+    public Transform groundCheck;      // 발 밑에 배치할 빈 오브젝트
+    public float groundCheckRadius = 0.1f; // 체크할 원의 반지름
+
     // [Header("사운드 설정")]
     // public AudioSource AudioSource;
     // public AudioClip attackSound;
@@ -65,10 +68,15 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
     void Update()
     {
         // 바닥 체크 (녹색 선)
-        float legLength = GetComponent<Collider2D>().bounds.extents.y + 0.1f;
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, legLength, groundLayer);
-        _isGrounded = hit.collider != null;
-        Debug.DrawRay(transform.position, Vector2.down * legLength, _isGrounded ? Color.green : Color.red);
+        // float legLength = GetComponent<Collider2D>().bounds.extents.y + 0.1f;
+        // RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, legLength, groundLayer);
+        // _isGrounded = hit.collider != null;
+        // Debug.DrawRay(transform.position, Vector2.down * legLength, _isGrounded ? Color.green : Color.red);
+
+        if (groundCheck != null)
+        {
+            _isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        }
 
         UpdateAnimation();
 
@@ -169,10 +177,6 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
         transform.localScale = scale;
     }
 
-    // ... (나머지 Alert, Attack, UpdateAnimation 등은 기존과 동일) ...
-    // 코드가 너무 길어지니 생략된 부분은 기존 코드를 유지해주세요.
-
-    // [Attack, Alert, Animation 코드 유지 필요]
     private void UpdateAnimation()
     {
         if (anim == null) return;
@@ -183,7 +187,7 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
 
     private void HandleAttackState()
     {
-        rb.linearVelocity = Vector2.zero;
+        rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
         if (_playerTransform == null) return;
 
         float dir = _playerTransform.position.x - transform.position.x;
