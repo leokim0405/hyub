@@ -21,7 +21,6 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     public int playerHP = 4;
     public float speed;
     public float walkspeed;
-    public float runSpeed;
     public float jumpFoce;
     public int jumpCount;
     public bool IsGround;
@@ -47,6 +46,8 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     public AudioSource moveAudioSource;
     public AudioSource sfxAudioSource;
     public AudioClip walkSound;
+    public float walkSoundDelay = 0.4f; // 걷기 발소리 간격 (초)
+    private float nextStepTime = 0f;    // 다음 발소리가 날 시간
     public AudioClip attackSound;
     public AudioClip teleportSound;
 
@@ -58,6 +59,11 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     [SerializeField] private GameObject daggerPrefab;
     [SerializeField] private MarkerManager markerManager;
 
+    [Header("피격 설정")]
+    public float invincibleTime = 1f; // 피격 시 무적 시간 (1.5초)
+    private bool isInvincible = false;  // 현재 무적 상태인지 확인하는 스위치
+    public float hurtSpeedBonus = 3.0f;
+
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -65,8 +71,12 @@ public class PlayerMove : MonoBehaviour, ITeleportable
         _rigidBody = GetComponent<Rigidbody2D>();
         jumpCount = 2;
         walkspeed = 3f;
-        runSpeed = 6f;
         noiseRange = 10f;
+
+        if (GameManager.instance != null)
+        {
+            playerHP = GameManager.instance.playerCurrentHP;
+        }
 
         originalColor = spriteRenderer.color;
         if (HpUIManager.hpUI != null)
@@ -106,17 +116,6 @@ public class PlayerMove : MonoBehaviour, ITeleportable
         gameObject.transform.Translate(moveVector * Time.deltaTime, 0);
 
 
-        if (Input.GetKey(KeyCode.LeftShift))
-        {
-            anim.SetBool("Running", true);
-            speed = runSpeed;
-        }
-        else
-        {
-            anim.SetBool("Running", false);
-            speed = walkspeed;
-        }
-
         if (Input.GetKeyDown(KeyCode.Space) && jumpCount != 0)
         {
             // _rigidBody.AddForce(new Vector2(0, 6), ForceMode2D.Impulse);
@@ -136,7 +135,7 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             {
                 anim.SetTrigger("Throw");
                 Shoot();
-                nextAttackTime = Time.time + shootCooldown;
+                nextShootTime = Time.time + shootCooldown;
             }
         }
 
@@ -161,6 +160,11 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             isCrouching = false;
         }
 
+        if (isInvincible)
+        {
+            speed += hurtSpeedBonus; 
+        }
+
         isStealth = isCrouching || isInHidingZone;
 
         SetStealth(isStealth);
@@ -170,24 +174,26 @@ public class PlayerMove : MonoBehaviour, ITeleportable
 
     void HandleMoveSound()
     {
+        // 움직이고 있고 & 땅에 닿아 있는지 확인
         bool isMoving = Mathf.Abs(dir) > 0.1f && IsGround;
 
+        // 은신 중이 아닐 때만 소리 발생
         if (isMoving && !isStealth)
         {
-            if (!moveAudioSource.isPlaying)
+            // 🌟 쿨타임(딜레이)이 다 찼을 때만 딱 한 번 재생!
+            if (Time.time >= nextStepTime)
             {
-                moveAudioSource.clip = walkSound;
-                moveAudioSource.loop = true;
-                moveAudioSource.volume = walkVolume;
-                moveAudioSource.Play();
+                // PlayOneShot을 쓰면 소리가 겹치거나 잘리지 않고 자연스럽게 재생됩니다.
+                moveAudioSource.PlayOneShot(walkSound, walkVolume);
+                
+                // 다음 발소리가 날 시간을 예약해둡니다.
+                nextStepTime = Time.time + walkSoundDelay;
             }
         }
         else
         {
-            if (moveAudioSource.clip == walkSound && moveAudioSource.isPlaying)
-            {
-                moveAudioSource.Stop();
-            }
+            // 멈췄을 때 억지로 소리를 뚝! 끊지 않고 자연스럽게 잔향이 남도록 
+            // 기존의 Stop() 코드는 지우는 것이 액션 게임에서 훨씬 자연스럽습니다.
         }
     }
 
@@ -199,6 +205,8 @@ public class PlayerMove : MonoBehaviour, ITeleportable
 
     void SetStealth(bool isStealth)
     {
+        if (isInvincible) return;
+
         if (isStealth)
         {
             spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, stealthAlpha);
@@ -227,15 +235,7 @@ public class PlayerMove : MonoBehaviour, ITeleportable
 
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            playerHP -= 1;
-            if (HpUIManager.hpUI != null)
-            {
-                HpUIManager.hpUI.HeartUI(playerHP);
-            }
-            if (playerHP <= 0)
-            {
-                anim.SetTrigger("Die");
-            }
+            TakeDamage(1);
         }
     }
 
@@ -254,15 +254,7 @@ public class PlayerMove : MonoBehaviour, ITeleportable
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            playerHP -= 1;
-            if (HpUIManager.hpUI != null)
-            {
-                HpUIManager.hpUI.HeartUI(playerHP);
-            }
-            if (playerHP <= 0)
-            {
-                anim.SetTrigger("Die");
-            }
+            TakeDamage(1);
         }
     }
 
@@ -342,6 +334,63 @@ public class PlayerMove : MonoBehaviour, ITeleportable
             Debug.Log("attack sound!");
         }
 
+    }
+
+    // 🌟 데미지를 입고 GameManager에 저장까지 해주는 통합 함수
+    public void TakeDamage(int damage)
+    {
+        // 🌟 1. 무적 상태라면 데미지를 받지 않고 함수를 종료합니다!
+        if (isInvincible) return; 
+
+        playerHP -= damage;
+
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.playerCurrentHP = playerHP;
+        }
+
+        if (HpUIManager.hpUI != null)
+        {
+            HpUIManager.hpUI.HeartUI(playerHP);
+        }
+
+        if (playerHP <= 0)
+        {
+            anim.SetTrigger("Die");
+            if (GameManager.instance != null)
+            {
+                GameManager.instance.GameOver();
+            }
+        }
+        else
+        {
+            // 🌟 2. 죽지 않았다면, 깜빡거리는 무적 연출을 시작합니다!
+            StartCoroutine(InvincibilityRoutine());
+        }
+    }
+
+    // 🌟 3. 무적 시간 동안 깜빡거리는 효과를 주는 코루틴
+    private System.Collections.IEnumerator InvincibilityRoutine()
+    {
+        isInvincible = true; // 무적 켜기!
+
+        float timer = 0f;
+        while (timer < invincibleTime)
+        {
+            // 빨간색(혹은 반투명)으로 번쩍!
+            spriteRenderer.color = new Color(1f, 0f, 0f, 0.5f); 
+            yield return new WaitForSeconds(0.15f);
+            
+            // 원래 색상으로 복구!
+            spriteRenderer.color = originalColor; 
+            yield return new WaitForSeconds(0.15f);
+            
+            timer += 0.3f; // 0.15초 + 0.15초 경과
+        }
+
+        // 시간이 다 되면 무적 끄기!
+        spriteRenderer.color = originalColor;
+        isInvincible = false; 
     }
 
     private void OnDrawGizmosSelected()

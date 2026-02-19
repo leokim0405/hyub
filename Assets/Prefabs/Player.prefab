@@ -314,8 +314,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerHP: 4
   speed: 4
-  walkspeed: 0
-  runSpeed: 0
+  walkspeed: 4
+  runSpeed: 6
   jumpFoce: 6
   jumpCount: 0
   IsGround: 0
@@ -565,7 +565,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9193118818818879490, guid: 72164fbb8346dcb4dbe747ce3c6bf424, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -10
+      value: -20
       objectReference: {fileID: 0}
     - target: {fileID: 9193118818818879490, guid: 72164fbb8346dcb4dbe747ce3c6bf424, type: 3}
       propertyPath: m_LocalRotation.w
