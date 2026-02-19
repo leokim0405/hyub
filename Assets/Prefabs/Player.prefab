@@ -314,8 +314,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerHP: 4
   speed: 4
-  walkspeed: 0
-  runSpeed: 100
+  walkspeed: 4
+  runSpeed: 6
   jumpFoce: 6
   jumpCount: 0
   IsGround: 0

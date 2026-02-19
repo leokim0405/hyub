@@ -7,7 +7,6 @@ public class Book : MonoBehaviour
     [Header("컷신 및 이동 설정")]
     public PlayableDirector cutsceneDirector; // 아까 만든 CutsceneManager를 연결할 칸
     public string escapeStageName = "Stage2"; // 탈출할 씬 이름
-    public static bool hasBook = false;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -33,7 +32,7 @@ public class Book : MonoBehaviour
     // 컷신이 다 끝나면 자동으로 실행되는 함수
     private void OnCutsceneEnded(PlayableDirector director)
     {
-        hasBook = true;
+        GameManager.instance.hasSecretBook = true;
         StageTransition.targetSpawnName = "SpawnPoint_B"; 
         
         // 4. 2스테이지로 씬 로드
