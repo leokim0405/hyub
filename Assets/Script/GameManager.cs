@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
 
     [Header("게임 전역 데이터")]
-    public bool hasSecretBook = false; 
+    public bool hasSecretBook = false;
     public int playerCurrentHP = 4; // 현재 체력 (기본값 3)
     public int playerMaxHP = 4;     // 최대 체력 (기본값 3)
 
@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject); 
+            DontDestroyOnLoad(gameObject);
 
             // 🎵 1. 내 몸(GameManager)에 오디오 플레이어가 있는지 확인하고, 없으면 달아줍니다.
             bgmPlayer = GetComponent<AudioSource>();
@@ -45,6 +45,17 @@ public class GameManager : MonoBehaviour
     {
         // 현재 활성화된 씬을 가져와서 OnSceneLoaded 함수에 억지로 집어넣습니다.
         OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
+    }
+
+    public void ResetGameData()
+    {
+        Debug.Log("♻️ 모든 게임 데이터 초기화 중...");
+        hasSecretBook = false;
+        playerCurrentHP = playerMaxHP;
+        playtime = 0f;
+        isGameOver = false;
+        isTimerRunning = false;
+        Time.timeScale = 1f; // 멈췄던 시간도 정상화
     }
 
     private void Update()
@@ -68,14 +79,20 @@ public class GameManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log($"==== [{scene.name}] 씬 로드 완료 ====");
+        if (scene.name == "StartScene" || scene.name == "EndScene")
+        {
+            ResetGameData();
+            return; // 메뉴에서는 아래 로직 실행 안 함
+        }
 
         if (scene.name == "stage_1" && !hasSecretBook)
         {
-            playtime = 0f;
+            // playtime = 0f;
+            // isTimerRunning = true;
+            // isGameOver = false;
+            // Time.timeScale = 1f; // 혹시 정지되었던 시간 정상화
+            ResetGameData();
             isTimerRunning = true;
-            isGameOver = false;
-            Time.timeScale = 1f; // 혹시 정지되었던 시간 정상화
         }
 
         if (scene.name == "stage_1" || scene.name == "stage_2")
@@ -95,14 +112,14 @@ public class GameManager : MonoBehaviour
     {
         // 이미 게임오버 상태면 중복 실행 방지
         if (isGameOver) return;
-        
+
         isGameOver = true;
-        isTimerRunning = false; 
+        isTimerRunning = false;
 
         // 🌟 대기 없이 즉시 씬에서 UI 매니저를 찾아서 켭니다!
         ResultUIManager ui = Object.FindFirstObjectByType<ResultUIManager>(FindObjectsInactive.Include);
-        
-        if (ui != null) 
+
+        if (ui != null)
         {
             ui.ShowGameOver(); // 게임오버 창 켜기
         }
@@ -116,22 +133,23 @@ public class GameManager : MonoBehaviour
     public void GameClear()
     {
         isTimerRunning = false; // 타이머 정지
-        
+
         ResultUIManager ui = Object.FindFirstObjectByType<ResultUIManager>(FindObjectsInactive.Include);
         if (ui != null) ui.ShowGameClear(playtime);
     }
 
     public void GoToMainMenu()
     {
-        // 모든 상태 초기화
-        hasSecretBook = false;
-        playerCurrentHP = playerMaxHP;
-        playtime = 0f;
-        isGameOver = false;
-        Time.timeScale = 1f; // 정지된 시간 다시 흐르게
+        // // 모든 상태 초기화
+        // hasSecretBook = false;
+        // playerCurrentHP = playerMaxHP;
+        // playtime = 0f;
+        // isGameOver = false;
+        // Time.timeScale = 1f; // 정지된 시간 다시 흐르게
+        ResetGameData();
 
         // "MainMenu" 라는 이름의 씬으로 이동 (실제 메인 씬 이름으로 바꿔주세요!)
-        SceneManager.LoadScene("MainMenu"); 
+        SceneManager.LoadScene("StartScene");
     }
 
     // 🔴 [탈출 모드] 세팅 명령
@@ -164,7 +182,7 @@ public class GameManager : MonoBehaviour
     private void ChangeBGM(AudioClip newClip)
     {
         if (newClip == null) return; // 넣은 음악이 없으면 무시
-        
+
         // 🌟 이미 똑같은 노래가 나오고 있다면? 처음부터 다시 틀지 않고 그냥 둡니다.
         // (1스테이지에서 2스테이지로 넘어갈 때 노래가 뚝 끊기고 다시 시작되는 걸 방지!)
         if (bgmPlayer.clip == newClip && bgmPlayer.isPlaying) return;
