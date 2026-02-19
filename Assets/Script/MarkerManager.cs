@@ -91,11 +91,13 @@ public class MarkerManager : MonoBehaviour
         transA.position = transB.position;
         transB.position = tempPos;
 
+        Physics2D.SyncTransforms();
+
         // 순간이동 후 피드백 효과
         a.OnTeleport();
         b.OnTeleport();
 
-        if(swapSound != null && audioSource != null)
+        if (swapSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(swapSound);
         }
@@ -119,7 +121,7 @@ public class MarkerManager : MonoBehaviour
         }
     }
 
-    
+
 
 
 }

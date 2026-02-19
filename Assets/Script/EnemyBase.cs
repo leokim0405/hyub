@@ -13,6 +13,11 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
     public enum EnemyState { Idle, Patrol, Alert, Chase }
     public EnemyState _currentState = EnemyState.Patrol;
 
+    [Header("기본 설정")]
+    public float patrolTime = 2f;
+    public float speed = 3f;
+    public float WaitTime = 2.0f;
+
     [Header("능력치 설정")]
     [SerializeField] protected float maxHealth = 1f; // 기본 체력 1
     protected float currentHealth;
@@ -29,8 +34,14 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
     public AudioSource AudioSource;
     public AudioClip attackSound;
     public AudioClip boxColidekSound;
-    public float volume = 0.4f;
+    public float volume = 0.8f;
 
+    [Header("지형 감지")]
+    public LayerMask groundLayer;
+    public float wallCheckDist = 0.5f;
+    public float cliffCheckDist = 0.5f;
+
+    protected int _facingDir = 1;
     private bool isTakingDamage = false;
 
     public EnemyState currentState
@@ -173,7 +184,7 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
 
                 TakeDamage(fallDamage);
                 AudioSource.PlayOneShot(boxColidekSound, volume);
-                
+
                 Destroy(collision.gameObject);
             }
         }
@@ -212,5 +223,128 @@ public abstract class EnemyBase : MonoBehaviour, ITeleportable
         {
             _isGrounded = false;
         }
+    }
+
+    //     IEnumerator PatrolRoutine()
+    //     {
+    //         // Debug.Log("🚶 순찰(Patrol) 루틴 시작됨"); // 루틴 진입 확인
+
+    //         while (currentState == EnemyState.Patrol)
+    //         {
+    //             // 지형 체크
+    //             if (CheckWall() || CheckCliff())
+    //             {
+    //                 rb.linearVelocity = Vector2.zero;
+    //                 yield return new WaitForSeconds(patrolWaitTime);
+    //                 Flip();
+    //             }
+    //             else
+    //             {
+    //                 // 이동
+    //                 rb.linearVelocity = new Vector2(_facingDir * moveSpeed, rb.linearVelocity.y);
+    //             }
+    //             yield return null;
+    //         }
+    //     }
+
+    //     IEnumerator PatrolRoutine()
+    //   {
+    //     while (currentState == EnemyState.Patrol) // 무한 루프 (순찰 계속)
+    //     {
+    //       // 1. 오른쪽으로 이동
+    //       // UnityEngine.Debug.Log("move start");
+    //       yield return StartCoroutine(MoveInDirection(Vector2.right, patrolTime));
+
+    //       // 2. 잠시 대기
+    //       yield return StartCoroutine(WaitAtEdge());
+
+    //       // 3. 왼쪽으로 이동
+    //       yield return StartCoroutine(MoveInDirection(Vector2.left, patrolTime));
+
+    //       // 4. 잠시 대기
+    //       yield return StartCoroutine(WaitAtEdge());
+    //     }
+    //   }
+
+    public IEnumerator PatrolRoutine()
+    {
+        while (currentState == EnemyState.Patrol)
+        {
+            // 1. 오른쪽으로 이동 (시간이 다 되거나 벽/절벽을 만나면 종료)
+            yield return StartCoroutine(MoveWithSensors(Vector2.right, patrolTime));
+
+            // 2. 잠시 대기
+            yield return StartCoroutine(WaitAtEdge());
+
+            // 3. 왼쪽으로 이동
+            yield return StartCoroutine(MoveWithSensors(Vector2.left, patrolTime));
+
+            // 4. 잠시 대기
+            yield return StartCoroutine(WaitAtEdge());
+        }
+    }
+
+    IEnumerator MoveWithSensors(Vector2 direction, float duration)
+    {
+        float timer = 0f;
+        _facingDir = (int)direction.x;
+
+        // 방향에 맞춰 캐릭터 고개 돌리기
+        Vector3 scale = transform.localScale;
+        scale.x = Mathf.Abs(scale.x) * _facingDir;
+        transform.localScale = scale;
+
+        while (timer < duration && currentState == EnemyState.Patrol)
+        {
+            // 🌟 [핵심] 이동 중에 벽이나 절벽을 감지하면 루틴을 즉시 탈출(break)
+            if (CheckWall() || CheckCliff())
+            {
+                // Debug.Log("장애물 감지! 시간 상관없이 이동 중단");
+                break;
+            }
+
+            // 이동 적용
+            rb.linearVelocity = new Vector2(_facingDir * speed, rb.linearVelocity.y);
+
+            // (선택사항) 만약 Enemy.cs의 점프 로직도 쓰고 싶다면 여기에 추가
+            // CheckAndJump(_facingDir);
+
+            timer += Time.deltaTime;
+            yield return null; // 다음 프레임까지 대기
+        }
+
+        // 이동이 끝나면 속도 0으로 초기화
+        rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+    }
+
+    IEnumerator WaitAtEdge()
+    {
+        // 정지 상태 유지
+        rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+        yield return new WaitForSeconds(WaitTime);
+    }
+
+    private bool CheckCliff()
+    {
+        Collider2D col = GetComponent<Collider2D>();
+        Vector2 origin = new Vector2(transform.position.x + (_facingDir * cliffCheckDist), col.bounds.center.y);
+        float rayLength = col.bounds.extents.y + 0.5f;
+
+        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, rayLength, groundLayer);
+
+        // [중요] 빨간 선이 그려져야 이 함수가 실행되고 있는 것임
+        Debug.DrawRay(origin, Vector2.down * rayLength, hit.collider == null ? Color.red : Color.green);
+
+        return hit.collider == null;
+    }
+
+    private bool CheckWall()
+    {
+        Collider2D col = GetComponent<Collider2D>();
+        Vector2 origin = col.bounds.center;
+        float rayLength = col.bounds.extents.x + wallCheckDist;
+        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.right * _facingDir, rayLength, groundLayer);
+        Debug.DrawRay(origin, Vector2.right * _facingDir * rayLength, hit.collider != null ? Color.red : Color.blue);
+        return hit.collider != null;
     }
 }

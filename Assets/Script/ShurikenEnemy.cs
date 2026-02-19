@@ -7,15 +7,15 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
     // public enum EnemyState { Patrol, Alert, Attack }
     // public EnemyState currentState = EnemyState.Patrol;
 
-    [Header("이동 설정")]
-    public float moveSpeed = 2f;
-    public float patrolWaitTime = 2.0f;
-    private int _facingDir = 1;
+    // [Header("이동 설정")]
+    // public float speed = 2f;
+    // public float WaitTime = 2.0f;
+    // private int _facingDir = 1;
 
-    [Header("지형 감지")]
-    public LayerMask groundLayer;
-    public float wallCheckDist = 0.5f;
-    public float cliffCheckDist = 0.5f;
+    // [Header("지형 감지")]
+    // public LayerMask groundLayer;   
+    // public float wallCheckDist = 0.5f;
+    // public float cliffCheckDist = 0.5f;
     // private bool _isGrounded;
 
     public Transform groundCheck;      // 발 밑에 배치할 빈 오브젝트
@@ -123,51 +123,51 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
         }
     }
 
-    IEnumerator PatrolRoutine()
-    {
-        // Debug.Log("🚶 순찰(Patrol) 루틴 시작됨"); // 루틴 진입 확인
+    // IEnumerator PatrolRoutine()
+    // {
+    //     // Debug.Log("🚶 순찰(Patrol) 루틴 시작됨"); // 루틴 진입 확인
 
-        while (currentState == EnemyState.Patrol)
-        {
-            // 지형 체크
-            if (CheckWall() || CheckCliff())
-            {
-                rb.linearVelocity = Vector2.zero;
-                yield return new WaitForSeconds(patrolWaitTime);
-                Flip();
-            }
-            else
-            {
-                // 이동
-                rb.linearVelocity = new Vector2(_facingDir * moveSpeed, rb.linearVelocity.y);
-            }
-            yield return null;
-        }
-    }
+    //     while (currentState == EnemyState.Patrol)
+    //     {
+    //         // 지형 체크
+    //         if (CheckWall() || CheckCliff())
+    //         {
+    //             rb.linearVelocity = Vector2.zero;
+    //             yield return new WaitForSeconds(patrolWaitTime);
+    //             Flip();
+    //         }
+    //         else
+    //         {
+    //             // 이동
+    //             rb.linearVelocity = new Vector2(_facingDir * moveSpeed, rb.linearVelocity.y);
+    //         }
+    //         yield return null;
+    //     }
+    // }
 
-    private bool CheckCliff()
-    {
-        Collider2D col = GetComponent<Collider2D>();
-        Vector2 origin = new Vector2(transform.position.x + (_facingDir * cliffCheckDist), col.bounds.center.y);
-        float rayLength = col.bounds.extents.y + 0.5f;
+    // private bool CheckCliff()
+    // {
+    //     Collider2D col = GetComponent<Collider2D>();
+    //     Vector2 origin = new Vector2(transform.position.x + (_facingDir * cliffCheckDist), col.bounds.center.y);
+    //     float rayLength = col.bounds.extents.y + 0.5f;
 
-        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, rayLength, groundLayer);
+    //     RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, rayLength, groundLayer);
 
-        // [중요] 빨간 선이 그려져야 이 함수가 실행되고 있는 것임
-        Debug.DrawRay(origin, Vector2.down * rayLength, hit.collider == null ? Color.red : Color.green);
+    //     // [중요] 빨간 선이 그려져야 이 함수가 실행되고 있는 것임
+    //     Debug.DrawRay(origin, Vector2.down * rayLength, hit.collider == null ? Color.red : Color.green);
 
-        return hit.collider == null;
-    }
+    //     return hit.collider == null;
+    // }
 
-    private bool CheckWall()
-    {
-        Collider2D col = GetComponent<Collider2D>();
-        Vector2 origin = col.bounds.center;
-        float rayLength = col.bounds.extents.x + wallCheckDist;
-        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.right * _facingDir, rayLength, groundLayer);
-        Debug.DrawRay(origin, Vector2.right * _facingDir * rayLength, hit.collider != null ? Color.red : Color.blue);
-        return hit.collider != null;
-    }
+    // private bool CheckWall()
+    // {
+    //     Collider2D col = GetComponent<Collider2D>();
+    //     Vector2 origin = col.bounds.center;
+    //     float rayLength = col.bounds.extents.x + wallCheckDist;
+    //     RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.right * _facingDir, rayLength, groundLayer);
+    //     Debug.DrawRay(origin, Vector2.right * _facingDir * rayLength, hit.collider != null ? Color.red : Color.blue);
+    //     return hit.collider != null;
+    // }
 
     private void Flip()
     {
@@ -229,8 +229,13 @@ public class ShurikenEnemy : EnemyBase //MonoBehaviour, ITeleportable
         if (projectilePrefab != null && firePoint != null)
         {
             GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
-            Vector2 dir = (_playerTransform.position - firePoint.position).normalized;
-            projectile.GetComponent<Projectile>().Launch(dir);
+
+            if (_playerTransform.position != null)
+            {
+                Vector2 dir = (_playerTransform.position - firePoint.position).normalized;
+                projectile.GetComponent<Projectile>().Launch(dir);
+            }
+
         }
     }
 

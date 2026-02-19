@@ -1,5 +1,8 @@
 using System.Data;
+// using System.Numerics;
+
 // using System.Drawing;
+
 using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -286,6 +289,8 @@ public class PlayerMove : MonoBehaviour, ITeleportable
 
     public void OnTeleport()
     {
+        _rigidBody.linearVelocity = Vector2.zero;
+
         if (teleportSound != null && sfxAudioSource != null)
         {
             sfxAudioSource.PlayOneShot(teleportSound, attackVolume);

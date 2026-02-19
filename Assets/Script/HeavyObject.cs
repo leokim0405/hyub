@@ -36,7 +36,7 @@ public class HeavyObject : MonoBehaviour, ITeleportable
 
         // }
 
-        playSound();        
+        // playSound();        
     }
 
     public void playSound()

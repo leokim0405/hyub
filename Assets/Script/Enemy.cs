@@ -9,9 +9,8 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
   // public EnemyState currentState = EnemyState.Patrol;
 
   [Header("기본 설정")]
-  public float speed = 3f;
-  public float patrolTime = 2f;
-  public float waitTime = 0.2f;
+  // public float speed = 3f;
+  // public float waitTime = 0.2f;
 
   // private Rigidbody2D rb;
   // private Coroutine _PatrolRoutine;  // edit
@@ -25,9 +24,9 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
   [Header("추격 설정")]
   public float chaseSpeed = 4f;
   // public float jumpForce = 10f;
-  public float wallCheckDist = 1.0f;
+  // public float wallCheckDist = 1.0f;
   // public float jumpThresholdY = 1.5f;  // edit
-  public LayerMask groundLayer;
+  // public LayerMask groundLayer;
 
   private Transform _playerTransform;
   // private bool _isGrounded;
@@ -171,24 +170,24 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
     }
   }
 
-  IEnumerator PatrolRoutine()
-  {
-    while (currentState == EnemyState.Patrol) // 무한 루프 (순찰 계속)
-    {
-      // 1. 오른쪽으로 이동
-      // UnityEngine.Debug.Log("move start");
-      yield return StartCoroutine(MoveInDirection(Vector2.right, patrolTime));
+  // IEnumerator PatrolRoutine()
+  // {
+  //   while (currentState == EnemyState.Patrol) // 무한 루프 (순찰 계속)
+  //   {
+  //     // 1. 오른쪽으로 이동
+  //     // UnityEngine.Debug.Log("move start");
+  //     yield return StartCoroutine(MoveInDirection(Vector2.right, patrolTime));
 
-      // 2. 잠시 대기
-      yield return StartCoroutine(WaitAtEdge());
+  //     // 2. 잠시 대기
+  //     yield return StartCoroutine(WaitAtEdge());
 
-      // 3. 왼쪽으로 이동
-      yield return StartCoroutine(MoveInDirection(Vector2.left, patrolTime));
+  //     // 3. 왼쪽으로 이동
+  //     yield return StartCoroutine(MoveInDirection(Vector2.left, patrolTime));
 
-      // 4. 잠시 대기
-      yield return StartCoroutine(WaitAtEdge());
-    }
-  }
+  //     // 4. 잠시 대기
+  //     yield return StartCoroutine(WaitAtEdge());
+  //   }
+  // }
 
   IEnumerator MoveInDirection(Vector2 direction, float duration)
   {
@@ -210,7 +209,7 @@ public class Enemy : EnemyBase //MonoBehaviour, ITeleportable
   IEnumerator WaitAtEdge()
   {
     rb.linearVelocity = new Vector2(0, rb.linearVelocity.y); // 정지
-    yield return new WaitForSeconds(waitTime); // 지정된 시간만큼 대기
+    yield return new WaitForSeconds(WaitTime); // 지정된 시간만큼 대기
   }
 
 

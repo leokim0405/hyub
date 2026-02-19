@@ -181,7 +181,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AudioSource: {fileID: 7531560646057305500}
   boxColidekSound: {fileID: 8300000, guid: e8d68cac09437ac4ead7ea9796ad4141, type: 3}
-  volume: 1
+  volume: 2
 --- !u!1 &2670730087591651661
 GameObject:
   m_ObjectHideFlags: 0
