@@ -90,10 +90,15 @@ public class KatanaZeroSpeech : MonoBehaviour
     }
 
     // 버텍스 애니메이션 핵심 로직
+    // 버텍스 애니메이션 핵심 로직 (빌드 오류 수정 버전)
     private void ApplyJitterEffect()
     {
+        // 1. 버텍스 정보 초기화 (텍스트 모양 리셋)
         textComponent.ForceMeshUpdate();
         var textInfo = textComponent.textInfo;
+
+        // 글자가 없으면 실행하지 않음
+        if (textInfo.characterCount == 0) return;
 
         for (int i = 0; i < textInfo.characterCount; i++)
         {
@@ -106,30 +111,24 @@ public class KatanaZeroSpeech : MonoBehaviour
             int materialIndex = charInfo.materialReferenceIndex;
             int vertexIndex = charInfo.vertexIndex;
 
-            // 원본 버텍스 배열 참조
-            Vector3[] sourceVertices = textInfo.meshInfo[materialIndex].vertices;
+            // 원본 버텍스 배열 참조 (복사본이 아닌 실제 배열을 수정해야 함)
+            Vector3[] destinationVertices = textInfo.meshInfo[materialIndex].vertices;
 
-            // 꿀렁거리는 오프셋 계산 (PerlinNoise나 Sin/Cos 활용)
-            // Time.time에 인덱스(i)를 섞어 글자마다 다르게 움직이게 함
+            // 꿀렁거리는 오프셋 계산 (PerlinNoise 활용)
             float offsetX = (Mathf.PerlinNoise(Time.time * shakeSpeed, i) - 0.5f) * shakeAmount;
             float offsetY = (Mathf.PerlinNoise(i, Time.time * shakeSpeed) - 0.5f) * shakeAmount;
 
             Vector3 jitter = new Vector3(offsetX, offsetY, 0);
 
-            // 사각형(Quad)을 구성하는 4개의 점(Vertex) 모두 이동
-            sourceVertices[vertexIndex + 0] += jitter; // 좌하단
-            sourceVertices[vertexIndex + 1] += jitter; // 좌상단
-            sourceVertices[vertexIndex + 2] += jitter; // 우상단
-            sourceVertices[vertexIndex + 3] += jitter; // 우하단
+            // 🌟 2. 직접 Mesh를 건드리지 않고, TMP의 vertices 배열 값만 이동시킵니다.
+            destinationVertices[vertexIndex + 0] += jitter; // 좌하단
+            destinationVertices[vertexIndex + 1] += jitter; // 좌상단
+            destinationVertices[vertexIndex + 2] += jitter; // 우상단
+            destinationVertices[vertexIndex + 3] += jitter; // 우하단
         }
 
-        // 변경된 버텍스를 실제 메시에 적용
-        for (int i = 0; i < textInfo.meshInfo.Length; i++)
-        {
-            var meshInfo = textInfo.meshInfo[i];
-            meshInfo.mesh.vertices = meshInfo.vertices;
-            textComponent.UpdateGeometry(meshInfo.mesh, i);
-        }
+        // 🌟 3. [핵심] Mesh를 직접 조작하지 않고, TMP 공식 함수로 변경 사항을 캔버스에 전달합니다!
+        textComponent.UpdateVertexData(TMP_VertexDataUpdateFlags.Vertices);
     }
 
     private bool IsPunctuation(char c)
