@@ -190,4 +190,13 @@ public class GameManager : MonoBehaviour
         bgmPlayer.clip = newClip;
         bgmPlayer.Play();
     }
+
+    public void StopBGM()
+    {
+        if (bgmPlayer != null && bgmPlayer.isPlaying)
+        {
+            bgmPlayer.Stop(); 
+            // 만약 나중에 멈춘 부분부터 다시 틀고 싶다면 bgmPlayer.Pause(); 를 쓰셔도 됩니다.
+        }
+    }
 }

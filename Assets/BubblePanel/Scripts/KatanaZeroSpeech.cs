@@ -149,7 +149,7 @@ public class KatanaZeroSpeech : MonoBehaviour
         Debug.Log("UI가 켜졌습니다! 이벤트를 발생시킵니다.");
         
         // 인스펙터에 연결해둔 이벤트들을 전부 실행해라!
-        SetText("전 마인들에게 알린다. 침입자가 발생했다.\n무슨 수를 써서라도, 침입자를 제거해라.");
+        SetText("쥐가 숨어들어왔구나.\n교인들은 당장 이를 찾아내 죽이라.");
     }
     
 }

@@ -22,6 +22,7 @@ public class Book : MonoBehaviour
             // 2. 컷신 재생 시작!
             if (cutsceneDirector != null)
             {
+                GameManager.instance.StopBGM();
                 cutsceneDirector.Play();
                 // 컷신이 끝나는 순간을 감지해서 아래 OnCutsceneEnded 함수를 실행시킴
                 cutsceneDirector.stopped += OnCutsceneEnded; 

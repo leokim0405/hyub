@@ -315,7 +315,6 @@ MonoBehaviour:
   playerHP: 4
   speed: 4
   walkspeed: 4
-  runSpeed: 6
   jumpFoce: 6
   jumpCount: 0
   IsGround: 0
@@ -330,16 +329,19 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   attackCooldown: 1
-  shootCooldown: 0.5
+  shootCooldown: 2
   moveAudioSource: {fileID: 5830482574758663709}
   sfxAudioSource: {fileID: 9044537989548396100}
   walkSound: {fileID: 8300000, guid: 302092297e55d6e4d862ac7c5d371c79, type: 3}
+  walkSoundDelay: 0.4
   attackSound: {fileID: 8300000, guid: 1bf4ec71c55a3994c8f92be794a15978, type: 3}
   teleportSound: {fileID: 8300000, guid: 084e652b2e250034aa8c1a76579e92fd, type: 3}
   walkVolume: 0.5
   attackVolume: 1
   daggerPrefab: {fileID: 9099375237932404251, guid: afe58400e8da2e64fa673a87ab1141c2, type: 3}
   markerManager: {fileID: 6116999437025721405}
+  invincibleTime: 1
+  hurtSpeedBonus: 3
 --- !u!95 &2574940006091643003
 Animator:
   serializedVersion: 7
@@ -550,6 +552,10 @@ PrefabInstance:
     - target: {fileID: 1135645259156407864, guid: 72164fbb8346dcb4dbe747ce3c6bf424, type: 3}
       propertyPath: m_Name
       value: CinemachineCamera
+      objectReference: {fileID: 0}
+    - target: {fileID: 6776527313010814031, guid: 72164fbb8346dcb4dbe747ce3c6bf424, type: 3}
+      propertyPath: Lens.OrthographicSize
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6776527313010814031, guid: 72164fbb8346dcb4dbe747ce3c6bf424, type: 3}
       propertyPath: Target.TrackingTarget

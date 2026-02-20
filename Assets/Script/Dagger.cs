@@ -17,7 +17,6 @@ public class  Dagger : MonoBehaviour, ITeleportable
   void Awake()
   {
     speed = 8f;
-    lifeTime = 2f;
     rb = GetComponent<Rigidbody2D>();
     anim = GetComponent<Animator>();
     // Destroy(gameObject, lifeTime);
